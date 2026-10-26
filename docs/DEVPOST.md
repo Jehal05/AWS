@@ -41,7 +41,7 @@ human handoff, never a silent drop.
 
 ## Accomplishments
 - A complete renewal, from first message to payment, across two channels in one thread
-- 58 automated tests, including the whole demo story and the guardrails
+- 60 automated tests, including the whole demo story and the guardrails
 - Adapters validated against the real AWS request schemas
 
 ## What we learned

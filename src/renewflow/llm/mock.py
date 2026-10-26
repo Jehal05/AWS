@@ -96,6 +96,9 @@ class _Run:
         return ModelTurn(text, [])
 
 
+CHANNEL_NAMES = {"whatsapp": "WhatsApp", "email": "email", "sms": "SMS"}
+
+
 class MockModel:
     name = "mock-rules-v1"
 
@@ -134,14 +137,14 @@ class MockModel:
                     channel=channel,
                     note="Send the renewal message when quiet hours end.",
                 )
-            return run.finish(f"Quiet hours are active; scheduled a follow-up on {channel}.")
+            return run.finish(f"Quiet hours are active; scheduled a follow-up on {CHANNEL_NAMES.get(channel, channel)}.")
         if run.n("send_message") == 0:
             subject, body = self._intro(pol, channel)
             return run.send(channel, body, subject, kind="proactive")
         sent = run.last("send_message") or {}
         if not sent.get("ok"):
             why = sent.get("blocked_by") or sent.get("error")
-            return run.finish(f"Could not send on {channel}: {why}.")
+            return run.finish(f"Could not send on {CHANNEL_NAMES.get(channel, channel)}: {why}.")
         if run.n("schedule_followup") == 0:
             return run.call(
                 "schedule_followup",
@@ -150,7 +153,7 @@ class MockModel:
                 note="Follow up if there is no reply.",
             )
         return run.finish(
-            f"Sent the renewal message on {channel} (confidence: {best['confidence']}) "
+            f"Sent the renewal message on {CHANNEL_NAMES.get(channel, channel)} (confidence: {best['confidence']}) "
             "and scheduled a follow-up in 48 hours."
         )
 

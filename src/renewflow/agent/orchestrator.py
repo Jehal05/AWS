@@ -33,6 +33,10 @@ class RunResult:
     blocked: list[dict[str, Any]] = field(default_factory=list)
 
 
+def channel_name(channel: str) -> str:
+    return {"whatsapp": "WhatsApp", "email": "email", "sms": "SMS"}.get(channel, channel)
+
+
 class RenewalAgent:
     def __init__(
         self,
@@ -156,7 +160,7 @@ class RenewalAgent:
             {"channel": channel, "kind": "confirmation",
              "body": "Welcome back. You're subscribed again. Ask me anything about your renewal."},
         )
-        summary = f"Customer opted back in on {channel}."
+        summary = f"Customer opted back in on {channel_name(channel)}."
         store.finish_run(run_id, 0, 1, "opted_in", summary)
         return RunResult(run_id, thread_id, "opted_in", summary, messages_sent=len(ctx.sent))
 

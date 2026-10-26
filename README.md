@@ -12,7 +12,7 @@ engagement events, enforces guardrails on every message, and hands off to a pers
 ```bash
 pip install -e ".[dev]"
 PYTHONPATH=src python -m renewflow --reset      # http://localhost:8000
-pytest                                          # 58 tests
+pytest                                          # 60 tests
 ```
 
 Open the dashboard, select **Priya Sharma** and press **Start renewal**, then use

@@ -213,7 +213,7 @@ function paintTopbar() {
     <div class="group">
       ${S.offline ? html`<span class="chip tone-crit">${icon('info', 14)}Can't reach the server</span>` : ''}
       <span class="chip tone-mute" tabindex="0" data-tip="Every customer, policy and engagement record here is invented. In local mode nothing leaves this app.">${icon('info', 14)}Synthetic data</span>
-      <button class="switch" role="switch" aria-checked="${quiet}" data-action="quiet" data-tip="Proactive messages wait until 08:00 customer time. Turn off to demo at any hour. Replies are never held back."><span class="track"></span>Quiet hours</button>
+      <button class="switch" role="switch" aria-checked="${String(quiet)}" data-action="quiet" data-tip="Proactive messages wait until 08:00 customer time. Turn off to demo at any hour. Replies are never held back."><span class="track"></span>Quiet hours</button>
       <button class="btn btn-quiet icon-btn" data-action="theme" aria-label="Switch to ${dark ? 'light' : 'dark'} theme" data-tip="Switch to ${dark ? 'light' : 'dark'} theme">${icon(dark ? 'sun' : 'moon')}</button>
       <button class="btn btn-quiet" data-action="reset">${icon('reset', 16)}Reset demo</button>
       <button class="btn btn-primary" data-action="cohort" ${S.busy.cohort ? raw('aria-busy="true" disabled') : ''}>${S.busy.cohort ? html`<span class="spin">${icon('reset', 16)}</span>Running` : html`${icon('play', 16)}Run simulation`}</button>
@@ -370,7 +370,7 @@ function viewConversations() {
       <div class="pane-head">
         <label class="search">${icon('search', 16)}<input class="field" type="search" placeholder="Search customers" value="${S.q}" data-keep="q" data-input="search" aria-label="Search customers"></label>
         <div class="filters" role="group" aria-label="Filter by status">
-          ${FILTERS.map(([k, l]) => html`<button data-action="filter" data-key="${k}" aria-pressed="${S.filter === k}">${l}<span class="count">${filterCount(k)}</span></button>`)}
+          ${FILTERS.map(([k, l]) => html`<button data-action="filter" data-key="${k}" aria-pressed="${String(S.filter === k)}">${l}<span class="count">${filterCount(k)}</span></button>`)}
         </div>
       </div>
       <div class="pane-body" data-scroll="list">
@@ -420,7 +420,7 @@ function threadPane(d) {
         <p class="meta">${p.product}, ${p.asset}</p>
       </div>
       ${d.status === 'not_contacted' ? html`<button class="btn btn-primary" data-action="start" data-policy="${p.id}" ${S.busy.start ? raw('aria-busy="true" disabled') : ''}>${icon('bolt', 16)}Start renewal</button>` : ''}
-      <button class="btn" data-action="side" data-tab="play" aria-label="Open the customer's phone">${icon('phone', 16)}Play as ${first}</button>
+      <button class="btn" data-action="side" data-tab="play">${icon('phone', 16)}Play as ${first}</button>
     </header>
     ${banner}
     <div class="pane-body" data-scroll="thread" data-stick="bottom">
@@ -475,7 +475,8 @@ function messageView(m, d) {
 function sidePane(d) {
   const tabs = [['details', 'Details'], ['activity', 'Activity'], ['play', 'Play as customer']];
   return html`
-    <div class="side-tabs" role="tablist">${tabs.map(([k, l]) => html`<button role="tab" aria-selected="${S.side === k}" data-action="side" data-tab="${k}">${l}</button>`)}</div>
+    <button class="btn btn-quiet side-back" data-action="side-close">${icon('back', 16)}Back to conversation</button>
+    <div class="side-tabs" role="tablist">${tabs.map(([k, l]) => html`<button role="tab" aria-selected="${String(S.side === k)}" data-action="side" data-tab="${k}">${l}</button>`)}</div>
     <div class="pane-body" data-scroll="side-${S.side}"><div class="side-body">
       ${S.side === 'details' ? detailsTab(d) : S.side === 'activity' ? activityTab(d) : playTab(d)}
     </div></div>`;
@@ -540,7 +541,10 @@ function activityTab(d) {
 /* ---- customer device simulator */
 function currentSimTab() {
   const chans = S.meta?.channels || [];
-  return chans.includes(S.simTab) ? S.simTab : chans[0];
+  if (chans.includes(S.simTab)) return S.simTab;
+  // Default to the channel the conversation is currently on, so a reply lands where the customer is.
+  const last = S.detail?.messages.at(-1)?.channel;
+  return chans.includes(last) ? last : chans[0];
 }
 
 function playTab(d) {
@@ -551,7 +555,7 @@ function playTab(d) {
     <section>
       <h3>Play as ${first}</h3>
       <p style="color:var(--ink-3);font-size:13.5px;margin:-4px 0 14px">This is ${first}'s side of the conversation. Messages you send here go through the real assistant, guardrails and event log.</p>
-      <div class="device-tabs" role="tablist">${chans.map((c) => html`<button role="tab" aria-selected="${tab === c}" data-action="simtab" data-tab="${c}"><span class="ch ch-${c}" style="color:inherit">${icon(CH[c].icon, 15)}</span>${CH[c].label}</button>`)}</div>
+      <div class="device-tabs" role="tablist">${chans.map((c) => html`<button role="tab" aria-selected="${String(tab === c)}" data-action="simtab" data-tab="${c}"><span class="ch ch-${c}" style="color:inherit">${icon(CH[c].icon, 15)}</span>${CH[c].label}</button>`)}</div>
       ${tab === 'email' ? emailDevice(d, first) : chatDevice(d, tab, first)}
     </section>`;
 }
@@ -641,7 +645,7 @@ function viewChannels() {
       <section class="section">
         <h2>Best channel across customers</h2>
         <p class="lede">Each customer is placed on the channel they are most likely to answer, using their last 90 days of engagement and what they have consented to.</p>
-        <div class="mixbar" role="img" aria-label="${enabled.map((c) => `${CH[c].label} ${counts[c]}`).join(', ')}">${enabled.filter((c) => counts[c]).map((c) => html`<span style="width:${(counts[c] / total) * 100}%;--c:var(--${c})" data-tip="${CH[c].label}: ${counts[c]} of ${total} customers">${counts[c] / total > 0.07 ? counts[c] : ''}</span>`)}</div>
+        <div class="mixbar" role="img" aria-label="${enabled.map((c) => `${CH[c].label} ${counts[c]}`).join(', ')}">${enabled.filter((c) => counts[c]).map((c) => html`<span style="width:${(counts[c] / total) * 100}%;--c:var(--${c})" data-tip="${CH[c].label}: ${counts[c]} of ${total} customers"></span>`)}</div>
         <div class="legend">${enabled.map((c) => html`<span><i class="sw sw-${c}"></i>${CH[c].label} ${counts[c]}</span>`)}${none ? html`<span><i class="sw" style="background:var(--slate)"></i>No consented channel ${none}</span>` : ''}</div>
       </section>
       <section class="section">
@@ -676,7 +680,7 @@ function toast(message, tone = '') {
   el.className = `toast ${tone}`;
   el.textContent = message;
   $('#toasts').append(el);
-  setTimeout(() => el.remove(), 4200);
+  setTimeout(() => el.remove(), 3200);
 }
 
 function confirmDialog({ title, body, confirm }) {
@@ -712,6 +716,7 @@ const actions = {
   back: () => { S.showSide = false; history.pushState(null, '', '#/conversations'); S.route = parseHash(); S.detail = null; paintAll(); },
   filter: (el) => { S.filter = el.dataset.key; paintView(); },
   side: (el) => { S.side = el.dataset.tab; S.showSide = true; S.mail = null; S.checkout = null; paintView(); },
+  'side-close': () => { S.showSide = false; paintView(); },
   simtab: (el) => { S.simTab = el.dataset.tab; S.mail = null; S.checkout = null; paintView(); },
   quick: (el) => sendCustomer(el.dataset.text, currentSimTab()),
   'open-mail': (el) => {
@@ -817,7 +822,7 @@ function parseHash() {
 window.addEventListener('hashchange', () => {
   const prev = S.route;
   S.route = parseHash();
-  if (prev.id !== S.route.id) { S.detail = null; S.mail = null; S.checkout = null; }
+  if (prev.id !== S.route.id) { S.detail = null; S.mail = null; S.checkout = null; S.simTab = null; }
   refresh(true);
 });
 
