@@ -69,7 +69,9 @@ class RenewalAgent:
             trigger = f"EVENT renewal_due\npolicy_id={policy.id}\nexpires={policy.expiry_date}"
             return self._run(policy.customer_id, thread_id, "proactive", None, trigger)
 
-    def handle_inbound(self, customer_id: int, channel: str, text: str) -> RunResult:
+    def handle_inbound(
+        self, customer_id: int, channel: str, text: str, provider_id: str | None = None
+    ) -> RunResult:
         """The customer wrote to us. Record it, apply compliance rules, then let the agent act."""
         with self.global_lock:
             store = self.store
@@ -81,7 +83,10 @@ class RenewalAgent:
             policy = store.renewal_policy_for(customer_id)
             thread_id = store.open_thread(customer_id, policy.id if policy else None)
             thread = store.get_thread(thread_id)
-            message_id = store.add_message(thread_id, customer_id, channel, "in", "customer", text)
+            message_id = store.add_message(
+                thread_id, customer_id, channel, "in", "customer", text,
+                meta={"provider_id": provider_id} if provider_id else None,
+            )
             store.mark_read_on_reply(thread_id, channel)
 
             if thread["status"] == "opted_out":

@@ -247,6 +247,27 @@ class Store:
         row = self.db.one("SELECT * FROM messages WHERE id=?", (message_id,))
         return self._message(row) if row else None
 
+    def message_by_provider_id(self, provider_id: str, direction: str | None = None) -> dict[str, Any] | None:
+        sql = "SELECT * FROM messages WHERE json_extract(meta, '$.provider_id') = ?"
+        args: tuple[Any, ...] = (provider_id,)
+        if direction:
+            sql += " AND direction = ?"
+            args += (direction,)
+        row = self.db.one(sql + " ORDER BY id LIMIT 1", args)
+        return self._message(row) if row else None
+
+    def customer_by_phone(self, phone: str) -> Customer | None:
+        """Match on digits only, so '+91 98765 43210' and '919876543210' are the same number."""
+        wanted = "".join(ch for ch in phone if ch.isdigit())
+        for customer in self.all_customers():
+            if customer.phone and "".join(c for c in customer.phone if c.isdigit()) == wanted:
+                return customer
+        return None
+
+    def customer_by_email(self, email: str) -> Customer | None:
+        wanted = email.strip().lower()
+        return next((c for c in self.all_customers() if (c.email or "").lower() == wanted), None)
+
     # ------------------------------------------------------------------ events
     def log_event(
         self,

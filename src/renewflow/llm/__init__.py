@@ -9,5 +9,10 @@ def build_model(settings: Settings) -> ChatModel:
     if settings.model == "mock":
         return MockModel()
     if settings.model == "bedrock":
-        raise NotImplementedError("The Bedrock model adapter arrives in the AWS integration step.")
+        import boto3  # imported lazily so local mode never needs it
+
+        from .bedrock import BedrockModel
+
+        client = boto3.client("bedrock-runtime", region_name=settings.aws_region)
+        return BedrockModel(client, settings.bedrock_model_id)
     raise ValueError(f"unknown RENEWFLOW_MODEL: {settings.model!r}")

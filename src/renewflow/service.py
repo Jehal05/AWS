@@ -55,8 +55,10 @@ class RenewFlow:
     def start_renewal(self, policy_id: int) -> RunResult:
         return self.agent.start_renewal(policy_id)
 
-    def inbound(self, customer_id: int, channel: str, text: str) -> RunResult:
-        return self.agent.handle_inbound(customer_id, channel, text)
+    def inbound(
+        self, customer_id: int, channel: str, text: str, provider_id: str | None = None
+    ) -> RunResult:
+        return self.agent.handle_inbound(customer_id, channel, text, provider_id)
 
     def run_cohort(self, count: int, rng_seed: int | None = None) -> dict[str, Any]:
         return run_cohort(self, count, rng_seed)

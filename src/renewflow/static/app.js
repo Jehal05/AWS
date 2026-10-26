@@ -200,7 +200,7 @@ function paintRail() {
         ${icon(i, 20)}<span class="lbl">${l}</span>
         ${v === 'handoffs' && open ? html`<span class="badge" aria-label="${open} waiting">${open}</span>` : ''}
       </button>`)}
-    ${m ? html`<div class="rail-foot"><b>${m.mode === 'local' ? 'Local mode' : 'AWS mode'}</b><br>Model: ${m.model}<br>Channels: ${m.channels.map((c) => CH[c].label).join(', ')}</div>` : ''}`);
+    ${m ? html`<div class="rail-foot"><b>${m.mode === 'local' ? 'Local mode' : 'AWS mode'}</b><br>Model: ${m.model}<br>Channels: ${m.channels.map((c) => CH[c].label + (m.simulated_channels.includes(c) ? ' (simulated)' : ' (live)')).join(', ')}</div>` : ''}`);
 }
 
 function paintTopbar() {

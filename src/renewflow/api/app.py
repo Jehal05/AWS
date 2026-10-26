@@ -52,6 +52,10 @@ def create_app(svc: RenewFlow | None = None) -> FastAPI:
     svc.seed_if_empty()
     app = FastAPI(title="RenewFlow", version="0.1.0", docs_url="/api/docs", openapi_url="/api/openapi.json")
     store = svc.store
+    if svc.settings.webhook_token:
+        from .webhooks import build_router
+
+        app.include_router(build_router(svc, svc.settings))
 
     def guard(fn):
         try:
@@ -76,6 +80,10 @@ def create_app(svc: RenewFlow | None = None) -> FastAPI:
             "mode": svc.settings.mode,
             "model": svc.model.name,
             "channels": list(svc.settings.enabled_channels),
+            "simulated_channels": [
+                c for c in svc.settings.enabled_channels
+                if svc.settings.mode == "local" or c in svc.settings.local_channels
+            ],
             "all_channels": list(CHANNELS),
             "quiet_hours": store.get_setting("quiet_hours", "on"),
             "synthetic_data": True,
