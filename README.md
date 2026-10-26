@@ -21,6 +21,10 @@ customers through the same agent. All data is synthetic.
 
 ## Architecture
 
+![RenewFlow architecture](docs/architecture.png)
+
+More: [deployment](docs/DEPLOY.md), [demo script](docs/DEMO_SCRIPT.md), [Devpost draft](docs/DEVPOST.md).
+
 - `agent/` tool-calling loop (max 8 steps), guardrails, traced tool calls
 - `channels/` `Channel` protocol: `LocalChannel` now, AWS End User Messaging Social + SES next
 - `llm/` `ChatModel` protocol: `MockModel` now, Amazon Bedrock next
