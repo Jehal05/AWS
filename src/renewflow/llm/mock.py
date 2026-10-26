@@ -26,7 +26,8 @@ def classify(text: str) -> list[str]:
         return ["opt_out"]
     if re.search(
         r"\b(claims?|complain\w*|disput\w*|lawyer|legal|ombudsman|human|agent|person|"
-        r"representative|call me|speak to|talk to|manager|refund)\b",
+        r"representative|call me|speak to|talk to|manager|refund|cancel\w*|discount|"
+        r"negotiat\w*|guarantee\w*|scam|fraud\w*|cheat\w*|already (renewed|paid|bought))\b",
         t,
     ):
         return ["handoff"]
@@ -37,8 +38,15 @@ def classify(text: str) -> list[str]:
         intents.append("split")
     if re.search(r"\b(why|higher|increase\w*|gone up|expensive|too (high|much)|hike|costly)\b", t):
         intents.append("premium_why")
-    if re.search(r"\b(pay|renew\w*|link|proceed|go ahead|yes|yeah|yep|ok|okay|sure|confirm)\b", t):
+    if re.search(r"\b(how much|what is (the|my) (premium|price|amount)|premium amount)\b", t):
+        intents.append("facts")
+    if re.search(r"\b(pay|renew\w*|link|proceed|go ahead|confirm)\b", t):
         intents.append("pay")
+    elif not intents and re.fullmatch(r"\W*(yes|yeah|yep|ok|okay|sure|k|fine)\W*", t):
+        intents.append("ack")
+    # Common Hinglish: treat as a premium question rather than an unknown message.
+    if not intents and re.search(r"\b(kitna|kyun|kyu|badh\w*|mehenga|mahanga|premium)\b", t):
+        intents.append("premium_why")
     if not intents:
         intents.append("greet" if re.match(r"\s*(hi|hello|hey|namaste)\b", t) else "unknown")
     return intents
@@ -188,6 +196,17 @@ class MockModel:
             return self._details_email(run, channel, pol, text)
         if primary == "pay":
             return self._pay(run, channel, pol)
+        if primary == "facts":
+            return self._facts(run, channel, pol)
+        if primary == "ack":
+            if run.n("send_message") == 0:
+                return run.send(
+                    channel,
+                    "Would you like me to send your secure payment link, or explain the premium "
+                    "or set up instalments first?",
+                    kind="info",
+                )
+            return run.finish("Asked the customer what they would like to do.")
         # greet / unknown
         if pol["clarifications_sent"] >= 1:
             return self._handoff(run, channel, pol, text,
@@ -279,6 +298,18 @@ class MockModel:
                     kind="quote",
                 )
         return run.finish("Emailed the quote and confirmed on the original channel.")
+
+    def _facts(self, run, channel, pol):
+        if run.n("send_message") == 0:
+            return run.send(
+                channel,
+                f"Your renewal premium for the {pol['product']} is {inr(pol['premium_new'])} "
+                f"(last year: {inr(pol['premium_prev'])}). It expires on "
+                f"{_date(pol['expiry_date'])}. I can explain the change, set up instalments, or "
+                "send a payment link.",
+                kind="info",
+            )
+        return run.finish("Answered the premium question.")
 
     def _pay(self, run, channel, pol):
         quote = run.last("generate_quote") or pol.get("latest_quote")

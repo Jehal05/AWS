@@ -182,3 +182,26 @@ def test_cohort_simulation_runs_the_real_agent(svc):
 def test_chat_model_protocol_is_satisfied_by_the_mock(svc):
     model: ChatModel = svc.model
     assert model.name
+
+
+def test_cancel_discount_and_already_paid_go_to_a_person(svc):
+    for cid, text in [(1, "I already renewed last week"), (2, "Can you give me a discount?"),
+                      (3, "I want to cancel my policy")]:
+        svc.start_renewal(cid)
+        assert svc.inbound(cid, "whatsapp", text).outcome == "handoff"
+
+
+def test_bare_ok_does_not_send_a_payment_link(svc):
+    first = svc.start_renewal(1)
+    svc.inbound(1, "whatsapp", "ok")
+    last = outbound(svc, first.thread_id)[-1]["body"]
+    assert "payment link" in last and "http" not in last
+    assert svc.store.latest_quote(1) is None
+    # and it did not use up the one clarification
+    assert svc.inbound(1, "whatsapp", "hmm what is this about").outcome == "replied"
+
+
+def test_premium_question_is_answered_from_the_policy(svc):
+    first = svc.start_renewal(1)
+    svc.inbound(1, "whatsapp", "how much is it?")
+    assert "₹18,400" in outbound(svc, first.thread_id)[-1]["body"]

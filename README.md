@@ -35,7 +35,7 @@ python -m renewflow --reset          # open http://localhost:8000
 6. Press **Run simulation** to push 20 synthetic customers through the same agent, then open
    **Overview** and **Channels**.
 
-Run `pytest` for the 60 tests (a browser test replays this whole story).
+Run `pytest` for the 63 tests (a browser test replays this whole story).
 
 Everything is synthetic, and in this mode WhatsApp and email are simulated in-process. The
 dashboard labels each channel "(simulated)" or "(live)" so the two are never confused.
@@ -80,7 +80,7 @@ src/renewflow/
   api/         FastAPI app and SNS webhook
   static/      dependency-free dashboard
 infra/         CDK stack      docs/   architecture, deployment, demo script, Devpost text
-tests/         60 tests
+tests/         63 tests
 ```
 
 ## Limits

@@ -64,3 +64,16 @@ AWS CDK, Amazon CloudFront
 - Gallery images: docs/screenshots/ (7 images at 3:2)
 - Live demo URL: [after deployment, otherwise "runs locally, see README"]
 - Data: all customers, policies and engagement records are synthetic.
+
+## WhatsApp (Meta) prize: how we use End User Messaging Social
+
+RenewFlow opens each renewal with an approved WhatsApp template through End User Messaging Social
+`SendWhatsAppMessage`, then replies in free-form text inside the 24-hour window. Delivery, read and
+failure receipts and customer replies return through SNS to our webhook, feed the channel score,
+and continue the same conversation thread, including a move to email mid-conversation. Status:
+adapters are tested against botocore schemas; a live send needs a Meta-approved number.
+
+## Note on the numbers
+
+Impact figures in the dashboard come from a synthetic 20-customer simulation with no real baseline.
+They show the system working, not measured business results.
