@@ -1,0 +1,29 @@
+RenewFlow. An agent that renews insurance on the channel each customer actually answers. Everything you will see is synthetic, and WhatsApp and email are simulated locally in this recording.
+
+Renewals are predictable revenue, and insurers lose them to one-size-fits-all reminders. RenewFlow chooses the channel, holds the conversation, and knows when to stop.
+
+Meet Priya. Her premium is up from fourteen thousand eight hundred rupees to eighteen thousand four hundred. Her history says she reads WhatsApp and ignores email, so that is where we start. The scores come from her last ninety days, and consent always comes first.
+
+One click. The agent picks the channel, looks up the policy, sends the message, and schedules a follow up.
+
+Every step is recorded, including the raw tool calls.
+
+Now we play Priya, and ask whether she can split the payment.
+
+The agent explains exactly why the premium went up, and prices a quarterly plan. Every rupee amount comes from a pricing tool, and a guardrail blocks any number the tools did not produce.
+
+She asks for the details by email. Same conversation, new channel, no lost context.
+
+The quote arrives with a secure payment link. She pays, the policy is renewed, and she gets a receipt on WhatsApp.
+
+A different customer writes about a rejected claim. Claims and complaints are never handled by the bot. It hands over with a summary, then stays silent.
+
+A person sees the summary and picks it up with full context.
+
+When a customer sends STOP, consent is revoked on every channel immediately, before the model is involved.
+
+Now twenty synthetic customers run through the same agent. Renewal rate, revenue secured, guardrail activity, and how each channel performs.
+
+Each customer is placed on the channel they are most likely to answer.
+
+Under the hood, WhatsApp goes through AWS End User Messaging Social, email through Amazon S E S, and reasoning runs on Amazon Bedrock. Every channel sits behind an adapter, so the product also runs offline, as it does in this recording. Thank you.
