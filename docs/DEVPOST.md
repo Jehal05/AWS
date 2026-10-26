@@ -56,8 +56,9 @@ AWS CDK, Amazon CloudFront
 
 ## Required fields
 - ACE opportunity ID: [ask the partner team]
-- Demo video (about 3 minutes): [link]
+- Demo video (2:42): docs/demo/renewflow-demo.mp4 in the repo. Upload to YouTube or Vimeo for Devpost and paste the link: [link]
 - Repository: https://github.com/Jehal05/AWS
 - Architecture diagram: docs/architecture.png
+- Gallery images: docs/screenshots/ (7 images at 3:2)
 - Live demo URL: [after deployment, otherwise "runs locally, see README"]
 - Data: all customers, policies and engagement records are synthetic.
