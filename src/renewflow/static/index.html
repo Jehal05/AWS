@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RenewFlow</title>
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Omnichannel renewal assistant on AWS Communication Developer Services">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M5 22L16 10l11 10' fill='none' stroke='%23131a22' stroke-width='2'/%3E%3Ccircle cx='5' cy='22' r='3.5' fill='%231baf7a'/%3E%3Ccircle cx='16' cy='10' r='3.5' fill='%232a78d6'/%3E%3Ccircle cx='27' cy='20' r='3.5' fill='%23eb6834'/%3E%3C/svg%3E">
+  <link rel="preload" href="/fonts/figtree-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/styles.css">
+  <script>
+    // Apply a saved theme before first paint so there is no flash.
+    try { var t = localStorage.getItem('renewflow-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip" href="#view">Skip to content</a>
+  <div class="app">
+    <nav class="rail" id="rail" aria-label="Main"></nav>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <main id="view" tabindex="-1"></main>
+    </div>
+  </div>
+  <div id="tip" class="tip" role="tooltip" hidden></div>
+  <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+  <dialog id="dialog" class="dialog"></dialog>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

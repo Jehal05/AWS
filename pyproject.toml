@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "renewflow"
+version = "0.1.0"
+description = "Omnichannel agentic renewal assistant built on AWS Communication Developer Services"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.7",
+  "tzdata>=2024.1",
+]
+
+[project.optional-dependencies]
+aws = ["boto3>=1.35"]
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.6"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+renewflow = ["static/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint.per-file-ignores]
+# Deliberate: a failing tool or timezone lookup must degrade, never crash the run.
+"src/renewflow/agent/*.py" = ["BLE001"]
+"src/renewflow/clock.py" = ["PLW0127"]
+"src/renewflow/llm/mock.py" = ["ISC004"]
+"src/renewflow/seed.py" = ["C408"]
