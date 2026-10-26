@@ -1,119 +1,119 @@
 1
-00:00:01,303 --> 00:00:01,952
+00:00:03,803 --> 00:00:04,452
 RenewFlow.
 
 2
-00:00:01,952 --> 00:00:06,950
+00:00:04,452 --> 00:00:09,450
 An agent that renews insurance on the channel each customer actually answers.
 
 3
-00:00:06,950 --> 00:00:13,506
+00:00:09,450 --> 00:00:16,006
 Everything you will see is synthetic, and WhatsApp and email are simulated locally in this recording.
 
 4
-00:00:14,111 --> 00:00:19,935
+00:00:16,611 --> 00:00:22,435
 Renewals are predictable revenue, and insurers lose them to one-size-fits-all reminders.
 
 5
-00:00:19,935 --> 00:00:25,097
+00:00:22,435 --> 00:00:27,597
 RenewFlow chooses the channel, holds the conversation, and knows when to stop.
 
 6
-00:00:27,610 --> 00:00:28,269
+00:00:30,110 --> 00:00:30,769
 Meet Priya.
 
 7
-00:00:28,269 --> 00:00:34,022
+00:00:30,769 --> 00:00:36,522
 Her premium is up from fourteen thousand eight hundred rupees to eighteen thousand four hundred.
 
 8
-00:00:34,022 --> 00:00:38,876
+00:00:36,522 --> 00:00:41,376
 Her history says she reads WhatsApp and ignores email, so that is where we start.
 
 9
-00:00:38,876 --> 00:00:43,311
+00:00:41,376 --> 00:00:45,811
 The scores come from her last ninety days, and consent always comes first.
 
 10
-00:00:43,816 --> 00:00:44,401
+00:00:46,316 --> 00:00:46,901
 One click.
 
 11
-00:00:44,401 --> 00:00:49,960
+00:00:46,901 --> 00:00:52,460
 The agent picks the channel, looks up the policy, sends the message, and schedules a follow up.
 
 12
-00:00:50,465 --> 00:00:53,601
+00:00:52,965 --> 00:00:56,101
 Every step is recorded, including the raw tool calls.
 
 13
-00:00:55,735 --> 00:00:58,913
+00:00:58,235 --> 00:01:01,413
 Now we play Priya, and ask whether she can split the payment.
 
 14
-00:01:00,844 --> 00:01:05,753
+00:01:03,344 --> 00:01:08,253
 The agent explains exactly why the premium went up, and prices a quarterly plan.
 
 15
-00:01:05,753 --> 00:01:12,258
+00:01:08,253 --> 00:01:14,758
 Every rupee amount comes from a pricing tool, and a guardrail blocks any number the tools did not produce.
 
 16
-00:01:12,764 --> 00:01:15,179
+00:01:15,264 --> 00:01:17,679
 She asks for the details by email.
 
 17
-00:01:15,179 --> 00:01:18,588
+00:01:17,679 --> 00:01:21,088
 Same conversation, new channel, no lost context.
 
 18
-00:01:19,093 --> 00:01:21,820
+00:01:21,593 --> 00:01:24,320
 The quote arrives with a secure payment link.
 
 19
-00:01:21,820 --> 00:01:25,941
+00:01:24,320 --> 00:01:28,441
 She pays, the policy is renewed, and she gets a receipt on WhatsApp.
 
 20
-00:01:26,512 --> 00:01:29,616
+00:01:29,012 --> 00:01:32,116
 A different customer writes about a rejected claim.
 
 21
-00:01:29,616 --> 00:01:32,721
+00:01:32,116 --> 00:01:35,221
 Claims and complaints are never handled by the bot.
 
 22
-00:01:32,721 --> 00:01:35,643
+00:01:35,221 --> 00:01:38,143
 It hands over with a summary, then stays silent.
 
 23
-00:01:36,148 --> 00:01:39,582
+00:01:38,648 --> 00:01:42,082
 A person sees the summary and picks it up with full context.
 
 24
-00:01:40,275 --> 00:01:46,653
+00:01:42,775 --> 00:01:49,153
 When a customer sends STOP, consent is revoked on every channel immediately, before the model is involved.
 
 25
-00:01:50,796 --> 00:01:54,535
+00:01:53,296 --> 00:01:57,035
 Now twenty synthetic customers run through the same agent.
 
 26
-00:01:54,535 --> 00:01:59,756
+00:01:57,035 --> 00:02:02,256
 Renewal rate, revenue secured, guardrail activity, and how each channel performs.
 
 27
-00:02:00,361 --> 00:02:04,243
+00:02:02,861 --> 00:02:06,743
 Each customer is placed on the channel they are most likely to answer.
 
 28
-00:02:04,783 --> 00:02:14,340
+00:02:07,283 --> 00:02:16,840
 Under the hood, WhatsApp goes through AWS End User Messaging Social, email through Amazon S E S, and reasoning runs on Amazon Bedrock.
 
 29
-00:02:14,340 --> 00:02:21,542
+00:02:16,840 --> 00:02:24,042
 Every channel sits behind an adapter, so the product also runs offline, as it does in this recording.
 
 30
-00:02:21,542 --> 00:02:22,255
+00:02:24,042 --> 00:02:24,755
 Thank you.

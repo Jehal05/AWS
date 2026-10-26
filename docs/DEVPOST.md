@@ -56,7 +56,7 @@ AWS CDK, Amazon CloudFront
 
 ## Required fields
 - ACE opportunity ID: [ask the partner team]
-- Demo video (2:26, voice-over): docs/demo/renewflow-demo.mp4 in the repo. Upload it to YouTube or Vimeo for Devpost and paste the link: [link]
+- Demo video (2:29, voice-over, opens with the thumbnail): docs/demo/renewflow-demo.mp4 in the repo. Upload it to YouTube or Vimeo for Devpost and paste the link: [link]
 - Video thumbnail: docs/demo/thumbnail.png (1920x1080), also embedded as the mp4 cover
 - Subtitles to upload with the video: docs/demo/renewflow-demo.srt
 - Repository: https://github.com/Jehal05/AWS

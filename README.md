@@ -8,7 +8,7 @@ email), explains why the premium changed, prices payment options, sends a paymen
 to another channel mid-conversation without losing context. It hands claims, complaints and
 anything unclear to a person, honours STOP immediately, and shows everything on a dashboard.
 
-**Demo video (2:26, with voice-over and subtitles):** [docs/demo/renewflow-demo.mp4](docs/demo/renewflow-demo.mp4)
+**Demo video (2:29, with voice-over and subtitles):** [docs/demo/renewflow-demo.mp4](docs/demo/renewflow-demo.mp4)
 
 [![Watch the demo](docs/demo/thumbnail-1280x720.jpg)](docs/demo/renewflow-demo.mp4)
 
