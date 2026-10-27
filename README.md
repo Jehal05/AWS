@@ -1,5 +1,10 @@
 # RenewFlow
 
+[![CI](https://github.com/Jehal05/AWS/actions/workflows/ci.yml/badge.svg)](https://github.com/Jehal05/AWS/actions/workflows/ci.yml)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Status: local demo, AWS deployment pending](https://img.shields.io/badge/AWS-adapters%20tested%2C%20not%20yet%20deployed-orange)
+
 An omnichannel, agentic assistant for insurance renewals, built for the AWS Communication
 Developer Services (CDS) Agentic AI Partner Hackathon.
 
@@ -13,6 +18,26 @@ anything unclear to a person, honours STOP immediately, and shows everything on 
 [![Watch the demo](docs/demo/thumbnail-1280x720.jpg)](docs/demo/renewflow-demo.mp4)
 
 ![Overview](docs/screenshots/1-overview.png)
+
+## How it works
+
+```mermaid
+flowchart LR
+    due(["Renewal due"]) --> pick["Pick the channel the customer<br/>is most likely to answer"]
+    pick --> open["Send a personal opening<br/>message (WhatsApp or email)"]
+    open --> reply{"Customer<br/>replies?"}
+    reply -- "asks why or how much" --> explain["Explain the premium,<br/>price the options"]
+    reply -- "asks for details by email" --> switch["Continue the same thread<br/>on another channel"]
+    reply -- "claim, complaint, cancel,<br/>or unclear" --> human(["Hand off to a person<br/>with a summary"])
+    reply -- "STOP" --> stop(["Consent revoked, silent"])
+    explain --> pay["Send a secure payment link"]
+    switch --> pay
+    pay --> done(["Renewed, receipt sent"])
+```
+
+Every message passes consent, quiet-hours, length, promise and price checks before it leaves. The
+full set of diagrams (components, sequence flows, guardrails, data model and the AWS deployment) is in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Try it in two minutes
 
@@ -86,19 +111,33 @@ adjusted while building this set, so read that as a regression guard, not an acc
 same command grades Bedrock with `RENEWFLOW_MODEL=bedrock`; that run has not happened yet because
 there is no AWS access.
 
+## Documentation
+
+| Read | For |
+|---|---|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 12 diagrams: context, components, sequences, guardrails, states, data model, deployment |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | Deploying with the CDK, cost, and tear-down |
+| [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) | The narrated demo, scene by scene |
+| [docs/DEVPOST.md](docs/DEVPOST.md) | Submission text |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Running the checks and the rules the code keeps |
+
 ## Layout
 
 ```
 src/renewflow/
-  agent/       tool-calling loop (max 8 steps), guardrails, tools, prompts
-  analytics/   channel scoring (30-day half-life, Bayesian smoothing) and KPIs
+  agent/       tool-calling loop (max 8 steps), guardrails, six tools, prompts
+  analytics/   channel scoring (30-day half-life, Bayesian smoothing) and KPIs, incl. the A/B panel
   channels/    Channel protocol, local and AWS adapters
   llm/         ChatModel protocol, mock and Bedrock adapters
-  aws/         inbound WhatsApp and SES event processing
+  aws/         inbound WhatsApp and SES event processing, SNS signature verification
   api/         FastAPI app and SNS webhook
   static/      dependency-free dashboard
-infra/         CDK stack      docs/   architecture, deployment, demo script, Devpost text
-tests/         74 tests
+  simulation.py  synthetic customers run through the real agent
+  evalset.py / eval.py   37 golden conversations and their runner
+infra/         CDK stack (app.py, stack.py)
+docs/          architecture, deployment, demo script, Devpost text, screenshots, video
+tests/         74 tests (unit, API, AWS adapters with botocore stubs, CDK assertions, browser)
+.github/       CI: lint, tests and the golden set on Python 3.11 to 3.13
 ```
 
 ## Limits
