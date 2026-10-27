@@ -86,7 +86,7 @@ def test_ses_bounce_revokes_email_consent(svc):
 
 
 def _client(svc):
-    svc.settings = dataclasses.replace(svc.settings, webhook_token="secret", sns_topic_arns=("arn:aws:sns:us-east-1:1:t",))
+    svc.settings = dataclasses.replace(svc.settings, webhook_token="secret", sns_verify=False, sns_topic_arns=("arn:aws:sns:us-east-1:1:t",))
     return TestClient(create_app(svc))
 
 

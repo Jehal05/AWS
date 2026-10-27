@@ -63,6 +63,7 @@ RENEWFLOW_SES_FROM=${SesFrom}
 RENEWFLOW_SES_CONFIG_SET=${ConfigSet}
 RENEWFLOW_WA_PHONE_ID=${WaPhone}
 RENEWFLOW_WEBHOOK_TOKEN=${Token}
+RENEWFLOW_ADMIN_TOKEN=${AdminToken}
 RENEWFLOW_SNS_TOPIC_ARNS=${Topic}
 AWS_REGION=${Region}
 ENV
@@ -93,6 +94,10 @@ class RenewFlowStack(Stack):
         token = cdk.CfnParameter(
             self, "WebhookToken", no_echo=True, min_length=24,
             description="Secret path segment for the SNS webhook. Generate with: openssl rand -hex 24",
+        )
+        admin_token = cdk.CfnParameter(
+            self, "AdminToken", no_echo=True, default="",
+            description="Optional. Enables Reset/Run simulation (X-Admin-Token header). Empty keeps them disabled.",
         )
         ses_from = cdk.CfnParameter(
             self, "SesFromAddress", description="A verified SES identity to send from",
@@ -195,6 +200,7 @@ class RenewFlowStack(Stack):
                     "ConfigSet": config_set.configuration_set_name,
                     "WaPhone": wa_phone.value_as_string,
                     "Token": token.value_as_string,
+                    "AdminToken": admin_token.value_as_string,
                     "Topic": topic.topic_arn,
                 },
             )

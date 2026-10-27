@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import hmac
 import html
 from dataclasses import asdict
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -52,6 +53,17 @@ def create_app(svc: RenewFlow | None = None) -> FastAPI:
     svc.seed_if_empty()
     app = FastAPI(title="RenewFlow", version="0.1.0", docs_url="/api/docs", openapi_url="/api/openapi.json")
     store = svc.store
+
+    def admin(x_admin_token: str = Header(default="")) -> None:
+        """Guard destructive demo endpoints. Open in local mode; token-only in AWS mode."""
+        cfg = svc.settings
+        if cfg.mode == "local":
+            return
+        if not cfg.admin_token:
+            raise HTTPException(403, "disabled: set RENEWFLOW_ADMIN_TOKEN to enable")
+        if not hmac.compare_digest(x_admin_token, cfg.admin_token):
+            raise HTTPException(403, "admin token required")
+
     if svc.settings.webhook_token:
         from .webhooks import build_router
 
@@ -87,6 +99,7 @@ def create_app(svc: RenewFlow | None = None) -> FastAPI:
             "all_channels": list(CHANNELS),
             "quiet_hours": store.get_setting("quiet_hours", "on"),
             "synthetic_data": True,
+            "admin_locked": svc.settings.mode != "local",
         }
 
     @app.get("/api/overview")
@@ -125,7 +138,7 @@ def create_app(svc: RenewFlow | None = None) -> FastAPI:
     def pay(body: PayIn):
         return guard(lambda: svc.pay(body.token))
 
-    @app.post("/api/simulator/cohort")
+    @app.post("/api/simulator/cohort", dependencies=[Depends(admin)])
     def cohort(body: CohortIn):
         return svc.run_cohort(body.count)
 
@@ -134,13 +147,13 @@ def create_app(svc: RenewFlow | None = None) -> FastAPI:
         guard(lambda: svc.resolve_handoff(handoff_id, body.note))
         return {"ok": True}
 
-    @app.post("/api/settings")
+    @app.post("/api/settings", dependencies=[Depends(admin)])
     def update_settings(body: SettingsIn):
         if body.quiet_hours:
             store.set_setting("quiet_hours", body.quiet_hours)
         return meta()
 
-    @app.post("/api/reset")
+    @app.post("/api/reset", dependencies=[Depends(admin)])
     def reset():
         svc.reset()
         return {"ok": True}

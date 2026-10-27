@@ -35,7 +35,7 @@ python -m renewflow --reset          # open http://localhost:8000
 6. Press **Run simulation** to push 20 synthetic customers through the same agent, then open
    **Overview** and **Channels**.
 
-Run `pytest` for the 63 tests (a browser test replays this whole story).
+Run `pytest` for the 70 tests (a browser test replays this whole story).
 
 Everything is synthetic, and in this mode WhatsApp and email are simulated in-process. The
 dashboard labels each channel "(simulated)" or "(live)" so the two are never confused.
@@ -80,12 +80,15 @@ src/renewflow/
   api/         FastAPI app and SNS webhook
   static/      dependency-free dashboard
 infra/         CDK stack      docs/   architecture, deployment, demo script, Devpost text
-tests/         63 tests
+tests/         70 tests
 ```
 
 ## Limits
 
 SQLite on one instance is deliberate for a demo, not for production. The SNS webhook uses a secret
-URL token and a topic allow-list but does not yet verify SNS signatures.
+URL token, a topic allow-list and SNS signature verification (tested against locally signed
+messages, not yet against real SNS traffic). When deployed, Reset, Run simulation and settings are
+disabled unless an admin token is configured. The Bedrock adapter is tested with a scripted fake
+client in the exact Converse response shape, not against the live service.
 
 Licensed under MIT.

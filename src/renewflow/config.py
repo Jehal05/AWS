@@ -45,6 +45,11 @@ class Settings:
             a.strip() for a in os.getenv("RENEWFLOW_SNS_TOPIC_ARNS", "").split(",") if a.strip()
         )
     )
+    # Verify the RSA signature on every SNS message (on by default; tests switch it off).
+    sns_verify: bool = field(default_factory=lambda: os.getenv("RENEWFLOW_SNS_VERIFY", "1") != "0")
+    # In AWS mode the destructive demo endpoints (reset, simulation, settings) need this token in
+    # the X-Admin-Token header; with no token set they are disabled.
+    admin_token: str = field(default_factory=lambda: os.getenv("RENEWFLOW_ADMIN_TOKEN", ""))
     max_proactive_per_day: int = 2
     quiet_start_hour: int = 21
     quiet_end_hour: int = 8

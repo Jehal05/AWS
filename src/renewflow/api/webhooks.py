@@ -1,7 +1,7 @@
 """HTTP entry point for Amazon SNS. SNS posts JSON with a text/plain content type.
 
 The URL carries a secret token (so strangers cannot inject customer messages) and only messages
-from allow-listed topics are processed. For production, also verify the SNS message signature.
+from allow-listed topics are processed, and the SNS message signature is verified.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ import urllib.request
 
 from fastapi import APIRouter, HTTPException, Request
 
+from ..aws import sns_signature
 from ..aws.events import AwsEventProcessor
 from ..config import Settings
 from ..service import RenewFlow
@@ -47,6 +48,8 @@ def build_router(svc: RenewFlow, settings: Settings) -> APIRouter:
         topic = envelope.get("TopicArn", "")
         if settings.sns_topic_arns and topic not in settings.sns_topic_arns:
             raise HTTPException(403, "topic not allowed")
+        if settings.sns_verify and not sns_signature.verify(envelope):
+            raise HTTPException(403, "invalid SNS signature")
         kind = envelope.get("Type")
         if kind == "SubscriptionConfirmation":
             _confirm_subscription(envelope.get("SubscribeURL", ""))

@@ -33,6 +33,10 @@ cdk deploy \
   --parameters AlertEmail=you@your-company.com
 ```
 
+On a deployed instance the Reset, Run simulation and settings endpoints are disabled unless you
+also pass `--parameters AdminToken=<secret>` and send it as the `X-Admin-Token` header. SNS
+messages must carry a valid signature (`RENEWFLOW_SNS_VERIFY=0` turns this off, for tests only).
+
 The outputs give the dashboard URL and the SNS topic ARN. Then, in the End User Messaging Social
 console, set that topic as the WhatsApp event destination so replies and receipts reach the app.
 Confirm that the SNS subscription shows as Confirmed.
