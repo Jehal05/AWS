@@ -14,6 +14,7 @@ from typing import Any
 
 from .agent.guardrails import tz_for
 from .clock import FixedClock
+from .seed import AFFINITY
 
 SCRIPTS: dict[str, list[tuple[str, str | None]]] = {
     "price_then_split": [
@@ -90,25 +91,46 @@ def run_cohort(svc: Any, count: int, rng_seed: int | None = None, exclude: set[i
         store.clock = sim
         try:
             for index, customer in enumerate(chosen):
+                # Randomised 50/50 split (the list is shuffled): scored channel vs fixed email.
+                store.set_setting(f"arm:{customer.id}", "baseline" if index % 2 else "smart")
                 sim.set(base + timedelta(minutes=index * 2 + rng.randint(0, 5)))
                 weights = WEIGHTS.get(customer.persona, WEIGHTS["balanced"])
                 scenario = rng.choices(list(weights), weights=list(weights.values()))[0]
-                _play(svc, customer, scenario, sim, rng)
-                scenarios[scenario] += 1
+                scenarios[_play(svc, customer, scenario, sim, rng)] += 1
         finally:
             store.clock = real_clock
     return {"customers": len(chosen), "scenarios": dict(scenarios)}
 
 
-def _play(svc: Any, customer: Any, scenario: str, sim: FixedClock, rng: random.Random) -> None:
+def _reaches_customer(svc: Any, customer: Any, rng: random.Random) -> bool:
+    """Assumption: a customer sees the first message with the probability their persona reads
+    that channel, relative to their best enabled channel. This is the same affinity table that
+    generates their 90-day history, so the channel scores are meaningful and a poor first-channel
+    choice costs engagement. It is a modelling choice, not a measured effect.
+    """
+    store = svc.store
+    first = next((m for m in store.thread_messages(store.thread_for(customer.id)["id"])
+                  if m["direction"] == "out"), None) if store.thread_for(customer.id) else None
+    if first is None:
+        return False
+    table = AFFINITY.get(customer.persona, AFFINITY["balanced"])
+    best = max(table[c][0] for c in svc.settings.enabled_channels if c in table)
+    seen = table.get(first["channel"], (0, 0, 0))[0] / best
+    return rng.random() < seen
+
+
+def _play(svc: Any, customer: Any, scenario: str, sim: FixedClock, rng: random.Random) -> str:
+    """Play one simulated customer. Returns the scenario that actually happened."""
     store = svc.store
     policy = store.renewal_policy_for(customer.id)
     svc.start_renewal(policy.id)
+    if scenario != "ghost" and not _reaches_customer(svc, customer, rng):
+        scenario = "ghost"  # the message went to a channel this customer does not look at
     for action, text in SCRIPTS[scenario]:
         sim.advance(minutes=rng.randint(1, 12))
         thread = store.thread_for(customer.id)
         if thread is None or thread["status"] in ("handoff", "opted_out"):
-            return
+            return scenario
         outbound = [m for m in store.thread_messages(thread["id"]) if m["direction"] == "out"]
         if action == "read" and outbound:
             store.mark_read(outbound[-1]["id"])
@@ -118,3 +140,4 @@ def _play(svc: Any, customer: Any, scenario: str, sim: FixedClock, rng: random.R
             quote = store.latest_quote(policy.id)
             if quote and quote.message_id:  # the customer can only pay a link they received
                 svc.pay(quote.token)
+    return scenario

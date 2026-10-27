@@ -196,9 +196,9 @@ function paintRail() {
   paint($('#rail'), html`
     <a class="brand" href="#/overview" aria-label="RenewFlow home">${LOGO}<span>RenewFlow</span></a>
     ${items.map(([v, i, l]) => html`
-      <button class="nav-item" data-action="nav" data-view="${v}" ${S.route.view === v ? raw('aria-current="page"') : ''}>
+      <button class="nav-item" data-action="nav" data-view="${v}" aria-label="${l}${v === 'handoffs' && open ? `, ${open} waiting` : ''}" ${S.route.view === v ? raw('aria-current="page"') : ''}>
         ${icon(i, 20)}<span class="lbl">${l}</span>
-        ${v === 'handoffs' && open ? html`<span class="badge" aria-label="${open} waiting">${open}</span>` : ''}
+        ${v === 'handoffs' && open ? html`<span class="badge" aria-hidden="true">${open}</span>` : ''}
       </button>`)}
     ${m ? html`<div class="rail-foot"><b>${m.mode === 'local' ? 'Local mode' : 'AWS mode'}</b><br>Model: ${m.model}<br>Channels: ${m.channels.map((c) => CH[c].label + (m.simulated_channels.includes(c) ? ' (simulated)' : ' (live)')).join(', ')}</div>` : ''}`);
 }
@@ -289,6 +289,8 @@ function viewOverview() {
       </section>
     </div>
 
+    ${experimentSection(o.experiment)}
+
     <div class="cols even">
       <section class="section stack" aria-labelledby="h-chan">
         <div>
@@ -306,6 +308,29 @@ function viewOverview() {
       </section>
     </div>
   </div>`;
+}
+
+function experimentSection(x) {
+  const arms = x.arms;
+  const n = Math.min(...arms.map((a) => a.contacted));
+  const empty = arms.every((a) => a.contacted === 0);
+  const hours = (h) => (h == null ? '—' : h < 1 ? `${Math.round(h * 60)} min` : `${h} h`);
+  return html`
+  <section class="section" aria-labelledby="h-ab">
+    <h2 id="h-ab">Does picking the channel help? <span class="tag">Synthetic</span></h2>
+    <p class="lede">Run the simulation to split customers at random: half get their best channel by score, half get email first, as most teams do today.</p>
+    ${empty ? html`<div class="empty"><p>Run the simulation to compare the two groups.</p></div>` : html`
+    <table class="data">
+      <caption>First channel chosen by score vs a fixed channel</caption>
+      <thead><tr><th scope="col">Group</th><th scope="col" class="r">Contacted</th><th scope="col" class="r">Responded</th><th scope="col" class="r">Renewed</th><th scope="col" class="r">Median time to renew</th></tr></thead>
+      <tbody>${arms.map((a) => html`<tr>
+        <th scope="row" style="font-weight:550">${a.label}</th>
+        <td class="r">${a.contacted}</td><td class="r">${pct(a.response_rate)}</td>
+        <td class="r">${pct(a.renewal_rate)} <small style="color:var(--ink-3)">(${a.renewed})</small></td>
+        <td class="r">${hours(a.median_hours_to_renew)}</td></tr>`)}</tbody>
+    </table>
+    <p class="lede" style="margin-top:12px">${n < x.min_sample ? html`<b>Only ${n} customers per group, which is too few to conclude anything.</b> ` : ''}${x.method}</p>`}
+  </section>`;
 }
 
 function channelTable(caption, heads, rows, kind) {

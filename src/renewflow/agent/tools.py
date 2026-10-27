@@ -121,6 +121,9 @@ def generate_quote(ctx: ToolContext, plan: str) -> dict[str, Any]:
     }
 
 
+BASELINE_CHANNEL = "email"  # what most renewal teams do today: email everyone first
+
+
 def next_best_channel(ctx: ToolContext, purpose: str = "renewal") -> dict[str, Any]:
     """Rank the customer's channels from their engagement history."""
     store = ctx.store
@@ -129,6 +132,12 @@ def next_best_channel(ctx: ToolContext, purpose: str = "renewal") -> dict[str, A
     ranked = scoring.rank_channels(store, customer.id, ctx.settings.enabled_channels, now)
     best, confidence = scoring.recommend(ranked)
     eligible = [s for s in ranked if s.eligible]
+    if store.get_setting(f"arm:{customer.id}", "smart") == "baseline":
+        # Experiment control group: the fixed default channel, ignoring engagement history.
+        fixed = next((s for s in eligible if s.channel == BASELINE_CHANNEL), None)
+        if fixed is not None:
+            best, confidence = fixed, "baseline"
+            eligible = [fixed] + [s for s in eligible if s is not fixed]
     fallback = eligible[1].channel if len(eligible) > 1 else None
     return {
         "ok": True,

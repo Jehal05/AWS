@@ -37,18 +37,40 @@ tool. STOP and START are handled before the model runs. Tool failures and model 
 human handoff, never a silent drop.
 
 ## Challenges
-[Fill in from real experience: WhatsApp template approval, SES sandbox, idempotent webhooks, …]
+- **WhatsApp's 24-hour rule shapes the design.** Free-form text is only allowed inside the window, so
+  the proactive opener has to be an approved template and every later reply plain text. We built
+  that split into the adapter instead of hoping the first message would be allowed.
+- **Keeping a model honest about money.** A renewal message with a wrong premium is worse than no
+  message. Every ₹ amount must come from a pricing tool or the send is blocked, and a test proves a
+  model that invents "₹9,999" is stopped.
+- **Bedrock Converse is strict.** Roles must alternate, the first message must be a user message,
+  and tool results have to be merged into one user turn. We wrote an adapter for this and test it
+  with a scripted client in the exact response shape.
+- **Duplicate and forged events.** SNS can deliver twice and anyone can POST to a URL, so inbound
+  events are idempotent, the webhook URL carries a secret, topics are allow-listed and the SNS
+  signature is verified.
+- **Our own experiment fooled us.** The first version of the channel A/B showed the fixed-email
+  group beating the scored group, because simulated customers ignored which channel they were
+  contacted on. We changed the simulation, label the result "synthetic" and say it follows from an
+  assumption.
 
 ## Accomplishments
 - A complete renewal, from first message to payment, across two channels in one thread
-- 60 automated tests, including the whole demo story and the guardrails
+- 74 automated tests, including the whole demo story, the guardrails and a browser run of the UI
+- A 37-message golden set in English, Hinglish and Hindi (`python -m renewflow.eval`)
+- A dashboard with zero axe accessibility violations in light and dark themes and on mobile
 - Adapters validated against the real AWS request schemas
 
 ## What we learned
-[Fill in.]
+- Treat every claim about impact as a hypothesis until it is measured. A dashboard number made from
+  simulated customers is a demonstration of the measurement, nothing more.
+- Put the safety checks (consent, STOP, price integrity) outside the model, so they hold no matter
+  which model runs.
+- Hindi and Hinglish arrive in the first week of any real WhatsApp pilot in India. They belong in
+  the test set from day one.
 
 ## What's next
-Verify SNS signatures, move state to DynamoDB, add SMS and voice, and A/B test message timing.
+Run the golden set against Bedrock, move state to DynamoDB, add SMS and voice, run a real A/B test on a pilot book of business, and add per-language WhatsApp templates.
 
 ## Built with
 Python, FastAPI, SQLite, Amazon Bedrock, AWS End User Messaging Social, Amazon SES, Amazon SNS,

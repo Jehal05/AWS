@@ -35,7 +35,7 @@ python -m renewflow --reset          # open http://localhost:8000
 6. Press **Run simulation** to push 20 synthetic customers through the same agent, then open
    **Overview** and **Channels**.
 
-Run `pytest` for the 71 tests (a browser test replays this whole story).
+Run `pytest` for the 74 tests (a browser test replays this whole story).
 
 Everything is synthetic, and in this mode WhatsApp and email are simulated in-process. The
 dashboard labels each channel "(simulated)" or "(live)" so the two are never confused.
@@ -68,6 +68,15 @@ is described in [docs/DEPLOY.md](docs/DEPLOY.md).
   also end in a handoff rather than a silent drop
 - Every tool call is traced and visible in the dashboard's Activity tab
 
+## Does choosing the channel help?
+
+The Overview splits simulated customers at random: half are contacted on the channel the score
+recommends, half on email first. It reports contacted, responded, renewed and time to renew for
+each. The customers are synthetic and see a message with the probability their persona reads that
+channel, so the gap follows from that assumption and is not evidence. On 8 simulated cohorts the
+scored group renewed 32 of 80 against 29 of 80, which is within noise. The point is the
+measurement; a real pilot would replace the simulated behaviour.
+
 ## Evaluation
 
 `python -m renewflow.eval` runs 37 labelled customer messages (claims, cancellations, price
@@ -89,7 +98,7 @@ src/renewflow/
   api/         FastAPI app and SNS webhook
   static/      dependency-free dashboard
 infra/         CDK stack      docs/   architecture, deployment, demo script, Devpost text
-tests/         71 tests
+tests/         74 tests
 ```
 
 ## Limits

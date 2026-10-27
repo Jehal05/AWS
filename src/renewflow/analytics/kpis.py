@@ -6,12 +6,58 @@ import json
 import statistics
 from typing import Any
 
+from ..clock import parse_iso
 from ..config import Settings
 from ..store import CHANNELS, Store
 
 
 def _rate(numerator: int, denominator: int) -> float | None:
     return round(numerator / denominator, 4) if denominator else None
+
+
+ARM_LABELS = {"smart": "Best channel by score", "baseline": "Fixed channel (email first)"}
+
+
+def experiment(store: Store) -> dict[str, Any]:
+    """Compare customers whose first channel was chosen by score against a fixed-channel control.
+
+    Only customers assigned to an arm are counted. In this demo the assignment and the customers'
+    behaviour are simulated, so the result illustrates the measurement, not real performance.
+    """
+    db = store.db
+    arms: dict[str, list[int]] = {"smart": [], "baseline": []}
+    for r in db.query("SELECT key, value FROM settings WHERE key LIKE 'arm:%'"):
+        if r["value"] in arms:
+            arms[r["value"]].append(int(r["key"].split(":", 1)[1]))
+    out = []
+    for arm, ids in arms.items():
+        contacted = responded = renewed = 0
+        hours: list[float] = []
+        for cid in ids:
+            first = db.one(
+                "SELECT MIN(created_at) ts FROM messages WHERE customer_id=? AND direction='out'", (cid,)
+            )
+            if not first or not first["ts"]:
+                continue
+            contacted += 1
+            if db.scalar("SELECT COUNT(*) FROM messages WHERE customer_id=? AND direction='in'", (cid,)) \
+                    or db.scalar("SELECT COUNT(*) FROM events WHERE customer_id=? AND type='clicked'", (cid,)):
+                responded += 1
+            policy = store.renewal_policy_for(cid)
+            if policy and policy.status == "renewed" and policy.renewed_at:
+                renewed += 1
+                hours.append((parse_iso(policy.renewed_at) - parse_iso(first["ts"])).total_seconds() / 3600)
+        out.append({
+            "arm": arm, "label": ARM_LABELS[arm], "assigned": len(ids), "contacted": contacted,
+            "response_rate": _rate(responded, contacted), "renewal_rate": _rate(renewed, contacted),
+            "renewed": renewed,
+            "median_hours_to_renew": round(statistics.median(hours), 1) if hours else None,
+        })
+    return {
+        "arms": out, "synthetic": True, "min_sample": 30,
+        "method": "Simulated customers see the first message with the probability their persona "
+                  "reads that channel. The gap follows from that assumption; it is not measured.",
+    }
 
 
 def overview(store: Store, settings: Settings) -> dict[str, Any]:
@@ -116,6 +162,7 @@ def overview(store: Store, settings: Settings) -> dict[str, Any]:
         "funnel": funnel,
         "campaign_channels": campaign,
         "engagement_history": history,
+        "experiment": experiment(store),
         "guardrails": {"blocked_total": sum(reasons.values()), "by_reason": reasons},
         "activity": _activity(store),
     }
