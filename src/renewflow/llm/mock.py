@@ -22,7 +22,8 @@ PLAN_LABEL = {"annual": "annual", "quarterly": "quarterly", "monthly": "monthly"
 def classify(text: str) -> list[str]:
     """Rule-based intent detection. Returns intents in the order they were found."""
     t = re.sub(r"no[- ]claims?( bonus)?", " ", text.lower())
-    if re.search(r"\b(stop|unsubscribe|opt[- ]?out)\b", t):
+    if re.search(r"\b(stop|unsubscribe|opt[- ]?out)\b|mat bhej|bhejna band|message band|band karo", t) \
+            or any(w in t for w in ("बंद करो", "मत भेजो", "मैसेज बंद")):
         return ["opt_out"]
     if re.search(
         r"\b(claims?|complain\w*|disput\w*|lawyer|legal|ombudsman|human|agent|person|"
@@ -30,6 +31,9 @@ def classify(text: str) -> list[str]:
         r"negotiat\w*|guarantee\w*|scam|fraud\w*|cheat\w*|already (renewed|paid|bought))\b",
         t,
     ):
+        return ["handoff"]
+    # Devanagari: \\b is unreliable around combining marks, so match substrings.
+    if any(w in t for w in ("व्यक्ति", "इंसान", "बात करनी", "शिकायत", "क्लेम", "कैंसिल", "रद्द")):
         return ["handoff"]
     intents: list[str] = []
     if re.search(r"\b(e-?mail|mail me|send (me )?(the |a )?(details|quote|summary|brochure))\b", t):
@@ -44,6 +48,8 @@ def classify(text: str) -> list[str]:
         intents.append("pay")
     elif not intents and re.fullmatch(r"\W*(yes|yeah|yep|ok|okay|sure|k|fine)\W*", t):
         intents.append("ack")
+    if not intents and any(w in t for w in ("प्रीमियम", "क्यों", "बढ़", "कितना")):
+        intents.append("premium_why")
     # Common Hinglish: treat as a premium question rather than an unknown message.
     if not intents and re.search(r"\b(kitna|kyun|kyu|badh\w*|mehenga|mahanga|premium)\b", t):
         intents.append("premium_why")

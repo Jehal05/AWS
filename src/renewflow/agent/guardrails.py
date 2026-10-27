@@ -24,7 +24,8 @@ _OPT_OUT_EXACT = re.compile(
 )
 _OPT_OUT_PHRASE = re.compile(
     r"\b(stop (messaging|texting|contacting|sending|emailing)|unsubscribe|"
-    r"do not (contact|message)|don'?t (contact|message))\b",
+    r"do not (contact|message)|don'?t (contact|message)|mat bhej\w*|bhejna band|message band|"
+    r"band karo)\b|बंद करो|मत भेजो|मैसेज बंद",
     re.IGNORECASE,
 )
 _OPT_IN = re.compile(r"^\s*(start|subscribe|unstop|yes please start)\s*[.!]*\s*$", re.IGNORECASE)

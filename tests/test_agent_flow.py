@@ -205,3 +205,10 @@ def test_premium_question_is_answered_from_the_policy(svc):
     first = svc.start_renewal(1)
     svc.inbound(1, "whatsapp", "how much is it?")
     assert "₹18,400" in outbound(svc, first.thread_id)[-1]["body"]
+
+
+def test_golden_conversations_all_pass_on_the_mock():
+    from renewflow.eval import run_all
+
+    failures = [(r.case.text, r.case.expect, r.got) for r in run_all() if not r.passed]
+    assert not failures, failures

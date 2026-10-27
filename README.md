@@ -35,7 +35,7 @@ python -m renewflow --reset          # open http://localhost:8000
 6. Press **Run simulation** to push 20 synthetic customers through the same agent, then open
    **Overview** and **Channels**.
 
-Run `pytest` for the 70 tests (a browser test replays this whole story).
+Run `pytest` for the 71 tests (a browser test replays this whole story).
 
 Everything is synthetic, and in this mode WhatsApp and email are simulated in-process. The
 dashboard labels each channel "(simulated)" or "(live)" so the two are never confused.
@@ -68,6 +68,15 @@ is described in [docs/DEPLOY.md](docs/DEPLOY.md).
   also end in a handoff rather than a silent drop
 - Every tool call is traced and visible in the dashboard's Activity tab
 
+## Evaluation
+
+`python -m renewflow.eval` runs 37 labelled customer messages (claims, cancellations, price
+questions, opt-outs, vague replies; English, Hinglish and Hindi) and checks the outcome: handoff,
+opt-out, email, payment link, answer or clarify. The rule-based mock passes 37/37, but it was
+adjusted while building this set, so read that as a regression guard, not an accuracy claim. The
+same command grades Bedrock with `RENEWFLOW_MODEL=bedrock`; that run has not happened yet because
+there is no AWS access.
+
 ## Layout
 
 ```
@@ -80,7 +89,7 @@ src/renewflow/
   api/         FastAPI app and SNS webhook
   static/      dependency-free dashboard
 infra/         CDK stack      docs/   architecture, deployment, demo script, Devpost text
-tests/         70 tests
+tests/         71 tests
 ```
 
 ## Limits
